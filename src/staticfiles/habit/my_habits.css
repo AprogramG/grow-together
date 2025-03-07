@@ -1,0 +1,15 @@
+
+
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .habit-name {
+        font-size: 1.25rem !important;
+    }
+    
+    .btn {
+        padding: 0.375rem 0.75rem;
+    }
+} 

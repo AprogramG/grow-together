@@ -1,0 +1,168 @@
+{% extends 'habit/base.html' %}
+{% load static %}
+
+{% block title %}Посты{% endblock %}
+
+{% block style%}
+<link rel="stylesheet" href="{% static 'community/post.css' %}">
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'community/posts.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+
+<h1 class="text-center text-white mt-4">{% block title_body %}{% endblock %}</h1>
+<div class="container mt-4">
+   
+   
+    
+    <div class="row justify-content-center">
+        {% if posts %}
+        {% for post in posts %}
+    
+        
+        <div class="col-12 col-md-8 mb-4">
+            <div class="card bg-success border-succes bg-opacity-50">
+                <div class="card-header border-light">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center me-2" style="min-width: 40px; height: 40px;">
+                            {% if post.user.avatar %}
+                            <img src="{{post.user.avatar.url }}" 
+                            alt="{{ post.user.username }}'s avatar" 
+                                class="profile-avatar rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                            {{ post.user.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        <div class="d-flex flex-column flex-sm-row justify-content-between w-100">
+                            <h5 class="text-white mb-0"><a class="text-decoration-none text-white fs-5 fs-sm-2" href="{% url 'accounts:profile' post.user.id %}">{{ post.user.username }}</a></h5>
+                            {% if post.habit %}
+                            <h5 class="text-white mb-0 text-right fs-6 fs-sm-5 mt-1 mt-sm-0">Привычка: <b>{{ post.habit.name }}</b></h5>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
+                    <h4 class="card-title text-white mb-3  fs-2" id="postTitle-{{ post.id }}">{{ post.title }}</h4>
+                    <div class="edit-form-{{ post.id }}" style="display: none;">
+                        <input type="text" class="form-control bg-dark text-white mb-3" id="editTitle-{{ post.id }}" value="{{ post.title }}">
+                    </div>
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" class="card-img mb-3 img-fluid" alt="Post image">
+                    {% endif %}
+             
+                        <p class="card-text text-white mb-1" id="postContent-{{ post.id }}">{{ post.content }}</p>
+                        <div class="edit-form-{{ post.id }}" style="display: none;">
+                            <textarea class="form-control bg-success bg-opacity-10 border-none text-white mb-3" id="editContent-{{ post.id }}" rows="3">{{ post.content }}</textarea>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-secondary me-2 cancel-edit-btn" data-post-id="{{ post.id }}">Отмена</button>
+                                <button class="btn btn-success save-edit-btn" data-post-id="{{ post.id }}">Сохранить</button>
+                            </div>
+                        </div>
+                        <p class="text-white-50 m-0" style="font-size: 15px;">Опубликовано: {{ post.created_at|date:"d.m.Y H:i" }}</p>
+                </div>
+                <div class="card-footer border-light">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-outline-light me-2 fs-6 hover-success" id='postLike' data-post-id="{{ post.id }}">
+                                {{ post.count_likes}} <i class="bi bi-heart"></i>
+                            </button>
+                
+                            <button class="btn btn-sm btn-outline-light toggle-comments hover-success fs-6" id='toggleComments'  data-post-id="{{ post.id }}">
+                                <i class="bi bi-chevron-down"></i> Показать комментарии
+                            </button>
+                           
+                        </div>
+                        
+                        {% if post.user == request.user %}
+                        <div class="edit-buttons">
+                            <button class="btn btn-sm btn-outline-light me-2 edit-post-btn fs-6 hover-success" data-post-id="{{ post.id }}">
+                                <i class="bi bi-pencil"></i> <span class="d-none d-sm-inline">Редактировать</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-light delete-post-btn fs-6 hover-success" data-post-id="{{ post.id }}"
+                                    data-bs-toggle="modal" data-bs-target="#deletePostModal-{{ post.id }}">
+                                <i class="bi bi-trash"></i> <span class="d-none d-sm-inline">Удалить</span>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="comments-section" 
+                         id="comments-{{ post.id }}"
+                         data-user-avatar="{% if request.user.avatar %}{{ request.user.avatar.url }}{% endif %}"
+                         data-username="{{ request.user.username }}">
+                        <div class="comment-form my-3">
+                            <div class="d-flex">
+                                <div class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                    {% if request.user.avatar %}
+                                    <img src="{{ request.user.avatar.url }}" alt="avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
+                                    {% else %}
+                                    {{ request.user.username|first|upper }}
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="input-group">
+                                        <textarea class="form-control bg-success bg-opacity-10 text-white comment-textarea" id='commentTextarea' data-post-id="{{ post.id }}" rows="1"></textarea>
+                                    </div>
+                                    <div class="d-flex justify-content-end mt-2" style="display: none;">
+                                        <button class="btn btn-sm btn-outline-light submit-comment fs-6" id='submitComment' data-post-id="{{ post.id }}" disabled>Отправить</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if post.comment_set.all %}
+                        <h6 class="text-white mb-3">Комментарии</h6>
+                        {% else %}
+                        <h6 class="text-white mb-3">Комментариев пока нет</h6>
+                        {% endif %}
+                        {% for comment in post.comment_set.all %}
+                        <div class="d-flex mb-2" id="comment">
+                            <div class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                {{ comment.user.username|first|upper }}
+                            </div>
+                            <div class="bg-light bg-opacity-25 rounded p-2">
+                                <small class="text-white">{{ comment.user.username }}</small>
+                                <p class="text-white-50 mb-0">{{ comment.content }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    {% if following %}
+    <h2 class="text-center text-white-50">Вы ещё не подписались ни на одного пользователя</h2>
+    {% else %}
+    <h2 class="text-center text-white-50">Постов пока нет</h2>
+    {% endif %}
+    {% endif %}
+</div>
+
+{% for post in posts %}
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deletePostModal-{{ post.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white">Подтверждение удаления</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white">Вы уверены, что хотите удалить этот пост?</p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger confirm-delete-btn" data-post-id="{{ post.id }}">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

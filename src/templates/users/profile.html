@@ -1,0 +1,110 @@
+{% extends 'habit/base.html' %}
+{% load static %}
+{% block title %}{{user.username}}{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'users/profile.css' %}">
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'users/profile.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+	<div class="row justify-content-center">
+		<div class="col-12 col-lg-8">
+			<!-- Профиль -->
+			<div class="text-center mb-5">
+				<div class="bg-dark p-4 rounded-3 mb-4">
+					{% if user.avatar %}
+						<div class="mb-4">
+							<img src="{{ user.avatar.url }}" 
+								 alt="{{ user.username }}'s avatar" 
+								 class="profile-avatar">
+						</div>
+					{% else %}
+						<div class="mb-4">
+							<div class="profile-avatar-placeholder mx-auto">
+								{{ user.username|make_list|first|upper }}
+							</div>
+						</div>
+					{% endif %}
+					
+					<h1 class="display-4 text-white mb-0">{{ user.username }}</h1>
+				</div>
+				
+				{% if user.id != request.user.id %}
+					<button class="btn btn-success btn mb-4 w-25" id="followButton" data-user-id="{{ user.id }}" style="height:60px;">
+						{% if is_following %}
+							Отписаться
+						{% else %}
+							Подписаться
+						{% endif %}
+					</button>
+				{% endif %}
+				
+			</div>
+
+			<!-- Статистика -->
+			<div class="row g-4 mb-5">
+				<div class="col-md-4">
+					<div class="stat-card">
+						<h4 class="text-white text-center mb-3">Всего привычек</h4>
+						<div class="stat-number">{{ habits_count }}</div>
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="stat-card">
+						<h4 class="text-white text-center mb-3 fs-5">Выполнено привычек</h4>
+						<div class="stat-number">{{ user.completed_habits }}</div>
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="stat-card">
+						<h4 class="text-white text-center mb-3">Лучший стрик</h4>
+						<div class="stat-number">{{ user.best_streak }}</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Достижения -->
+			<div class="achievements-section">
+				<h2 class="text-white text-center mb-4">Выполненные достижения</h2>
+				<div class="bg-dark rounded-3 p-4">
+					{% if achievements %}
+						{% for achievement in achievements %}
+						<div class="achievement-card">
+							<div class="d-flex align-items-center">
+								<div class="achievement-icon">
+									<img src="{{ achievement.achievement.img.url }}" 
+										 alt="{{ achievement.achievement.name }}" 
+										 style="max-width: 70%; max-height: 70%;">
+								</div>
+								<div class="flex-grow-1">
+									<h5 class="mb-1 text-white">{{ achievement.achievement.name }}</h5>
+									<p class="mb-0 text-white-50">{{ achievement.achievement.description }}</p>
+								</div>
+								<i class="bi bi-check-circle-fill text-success fs-3"></i>
+							</div>
+						</div>
+						{% endfor %}
+					{% else %}
+						<p class="text-center text-white-50 mb-0">Достижения пока не выполнены</p>
+					{% endif %}
+				</div>
+			</div>
+
+			<!-- Кнопка выхода -->
+			{% if user.id == request.user.id %}
+			<div class="text-center mt-5">
+				<a href="{% url 'accounts:logout' %}" class="btn btn-danger btn-lg px-5" name="logout">
+					<i class="bi bi-box-arrow-right me-2"></i>Выйти
+				</a>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock %}
+

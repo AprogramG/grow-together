@@ -1,0 +1,78 @@
+{% extends "habit/base.html" %}
+{% load static %}
+{% block title %}Мои привычки{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'habit/my_habits.css' %}">
+{% endblock %}
+{% block script %}
+<script src="{% static 'habit/my_habits.js' %}"></script>
+{% endblock %}
+{% block body %}
+<div class="container-fluid px-3 px-md-4 my-4" id="habits-list">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <h1 class="text-center text-white mb-4" id="habits-title">Мои привычки</h1>
+            
+            {% if not habits %}
+            <div class="text-center">
+                <p class="text-white-50 fs-2 mb-4">Вы ещё не создали ни одной привычки</p>
+                <button class="btn btn-success" onclick="window.location.href='{% url 'create_habit' %}'">Создать привычку</button>
+            </div>
+            {% endif %}
+            
+            {% for habit in habits %}
+            <div class="card bg-dark text-white mb-3" data-habit-id="{{ habit.id }}">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
+                        <div class="habit-content flex-grow-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="mb-0 habit-name fs-4" id="habit-name">{{ habit.name }}</h5>
+                                {% if habit.description %}
+                                <p class="mb-0 text-white-50 habit-description" id="habit-description">- {{ habit.description }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="edit-form d-none">
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control bg-secondary border-success border-2 bg-opacity-10 text-white name-input" value="{{ habit.name }}">
+                                    <input type="text" class="form-control bg-secondary border-success border-2 bg-opacity-10 text-white description-input" value="{{ habit.description }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success edit-btn" data-habit-id="{{ habit.id }}" data-edit-mode="false">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-danger delete-btn" data-habit-id="{{ habit.id }}" data-bs-toggle="modal" data-bs-target="#deleteModal{{ habit.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete confirmation modal -->
+            <div class="modal fade" id="deleteModal{{ habit.id }}" tabindex="-1" 
+                 aria-labelledby="deleteModalLabel{{ habit.id }}">
+                <div class="modal-dialog">
+                    <div class="modal-content bg-dark text-white">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel{{ habit.id }}">Удаление привычки</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Вы уверены, что хотите удалить привычку "{{ habit.name }}"?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="button" class="btn btn-danger confirm-delete-btn" data-habit-id="{{ habit.id }}">Удалить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

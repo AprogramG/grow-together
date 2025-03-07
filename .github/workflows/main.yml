@@ -1,0 +1,71 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        
+        
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD:  ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DB_NAME }}
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Start Django server and Run tests
+        env:
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DJANGO_ENV: development
+          DJANGO_SETTINGS_MODULE: config.settings.development
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+         
+      
+        run: | 
+          
+          pip install -r requirements.txt
+          python manage.py migrate
+          python manage.py runserver localhost:8000 &
+          echo $! > django.pid
+          sleep 5
+          curl http://localhost:8000   
+  
+          pytest -v
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /root/grow-together
+            git pull origin master --force
+            git reset --hard origin/master
+            
+            export DJANGO_ENV=production
+            export DB_HOST=db
+            
+            docker compose down
+            docker compose up -d --build

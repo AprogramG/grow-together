@@ -1,0 +1,102 @@
+.achievement-card {
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 12px;
+	padding: 20px;
+	margin-bottom: 15px;
+	transition: all 0.3s ease;
+}
+
+.achievement-card:hover {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.achievement-icon {
+	width: 50px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 50%;
+	margin-right: 15px;
+}
+
+.stat-card {
+	background: #212529;
+	border-radius: 12px;
+	padding: 20px;
+	height: 100%;
+}
+
+.stat-number {
+	font-size: 2.5rem;
+	font-weight: bold;
+	color: #198754;
+	background: rgba(25, 135, 84, 0.1);
+	border-radius: 50%;
+	width: 80px;
+	height: 80px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto;
+}
+
+.profile-avatar {
+	width: 200px;
+	height: 200px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 4px solid #198754;
+	margin-bottom: 1.5rem;
+}
+
+.profile-avatar-placeholder {
+	width: 200px;
+	height: 200px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 4rem;
+	font-weight: bold;
+	color: rgba(255, 255, 255, 0.8);
+	border: 4px solid #198754;
+	margin-bottom: 1.5rem;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+	.profile-avatar {
+		width: 150px;
+		height: 150px;
+	}
+	
+	.profile-avatar-placeholder {
+		width: 150px;
+		height: 150px;
+		font-size: 3rem;
+	}
+
+	.stat-card h4 {
+		font-size: 1.25rem !important;
+	}
+}
+
+@media (max-width: 576px) {
+	.profile-avatar {
+		width: 120px;
+		height: 120px;
+	}
+	
+	.profile-avatar-placeholder {
+		width: 120px;
+		height: 120px;
+		font-size: 2.5rem;
+	}
+
+	.stat-card h4 {
+		font-size: 1.1rem !important;
+	}
+}

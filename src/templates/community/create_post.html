@@ -1,0 +1,49 @@
+{% extends 'habit/base.html' %}
+{% block title %}Создать пост{% endblock %}
+{% block body %}
+<div class="container my-4">
+    <h1 class="text-center text-white mb-4">Создать новую запись</h1>
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card bg-dark">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3 text-center">
+                            <label for="postTitle" class="form-label text-white fs-5">Заголовок</label>
+                            <div class="d-flex justify-content-center">
+                                <input type="text" class="form-control bg-secondary border-success border-2 bg-opacity-10 text-white w-75 text-center" id="post-title" name="title" required>
+                            </div>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <label for="habitSelect" class="form-label text-white fs-5">Привычка</label>
+                            <div class="d-flex justify-content-center">
+                                <select class="form-control bg-success border-success border-2 bg-opacity-10 text-white w-75 text-center" id="habit-select" name="habit">
+                                    <option value="" selected disabled class="text-success fs-5">Выберите привычку</option>
+                                    {% for habit in habits %}
+                                        <option value="{{ habit.id }}" class="text-secondary">{{ habit.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <label for="postImage" class="form-label text-white fs-5">Изображение</label>
+                            <div class="d-flex justify-content-center">
+                                <input type="file" class="form-control bg-secondary border-success border-2 bg-opacity-10 text-white w-75" id="post-image" name="image" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <label for="postContent" class="form-label text-white fs-5">Содержание</label>
+                            <textarea class="form-control bg-secondary border-success border-2 bg-opacity-10 text-white w-100" id="post-content" name="content" rows="3" style="height: 200px;"></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success px-4">Опубликовать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

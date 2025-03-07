@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+	      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<link rel="stylesheet" href="{% static 'habit/base.css' %}">
+	<link rel="shortcut icon" href="{% static 'habit/icon.svg' %}" type="image/x-icon">
+	<title>{% block title %}{% endblock %}</title>
+	{% block style %}{% endblock %}
+
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div class="container-fluid p-0 d-flex flex-column min-vh-100">
+	<!-- Шапка -->
+	<div class="container-fluid bg-success py-2">
+		<div class="row">
+			<!-- Ссылки авторизации -->
+			<div class="col-12 text-end mb-2">
+				{% if user.is_authenticated %}
+					<a href="{% url 'accounts:profile' request.user.id %}" class="text-white text-decoration-none fs-5 me-3" name="profile_current_user"><b>{{ request.user }}</b></a>
+					
+				{% else %}
+					<a href="{% url 'accounts:login' %}" class="text-white text-decoration-none fs-5 me-3">Войти</a>
+					<a href="{% url 'accounts:register' %}" class="text-white text-decoration-none fs-5 me-3">Зарегестрироваться</a>
+				{% endif %}
+			</div>
+			<!-- Логотип и бренд -->
+			 
+			<div id="brand" class="col-12 text-center ms-m-5 ms-lg-5 ms-xl-5 ms-xxl-5 ms-sm-0">
+				<a class="navbar-brand" href="{% url 'home' %}">
+					<span class="brand-text">Grow Together</span>
+					<img class="brand-logo mb-4" id="logo" src="{% static 'habit/icon.svg' %}" alt="Logo" style="max-width: 120px; max-height: 120px;">
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<!-- Навигация -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-success border-bottom border-secondary border-opacity-10  w-100">
+		<div class="container-fluid ms-2">
+			<button class="navbar-toggler mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" style="transform: scale(0.8);">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+				<ul class="navbar-nav text-center">
+					<li class="nav-item mx-3">
+						<a class="nav-link position-relative fs-5 " data-page="home" href="{% url 'home' %}">
+							Главная
+							<span class="position-absolute bottom-0 start-50 translate-middle-x border-bottom border-2 border-light w-0 transition-all opacity-0 nav-underline"></span>
+						</a>
+					</li>
+					
+					<li class="nav-item dropdown mx-3">
+						<a class="nav-link position-relative fs-5 py" data-page="habits" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							Привычки
+							<span class="position-absolute bottom-0 start-50 translate-middle-x border-bottom border-2 border-light w-0 transition-all opacity-0 nav-underline"></span>
+						</a>
+						<div class="d-flex justify-content-center">
+						<ul id="dropdown-menu" class="dropdown-menu bg-success text-center fs-5">
+							<div class="d-flex flex-column align-items-center">
+							<li><a class="dropdown-item text-white px-2 py-0" href="{% url 'my_habits' %}">Мои привычки</a></li>
+								<li><a class="dropdown-item text-white px-2 py-0" href="{% url 'create_habit' %}">Создать привычку</a></li>
+							</div>
+						</ul>
+					</li>
+					<li class="nav-item dropdown mx-3">
+						<a class="nav-link position-relative fs-5" data-page="diary" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							Сообщество
+							<span class="position-absolute bottom-0 start-50 translate-middle-x border-bottom border-2 border-light w-0 transition-all opacity-0 nav-underline"></span>
+						</a>
+						<div class="d-flex justify-content-center">
+							<ul id="dropdown-menu" class="dropdown-menu bg-success text-center fs-5">
+								<div class="d-flex flex-column align-items-center">
+									<li><a class="dropdown-item text-white px-2 py-0" href="{% url 'community:community_home_page' %}">Главная</a></li>
+									<li><a class="dropdown-item text-white px-2 py-0" href="{% url 'community:following_page' %}">Подписки</a></li>
+									<li><a class="dropdown-item text-white px-2 py-0 fs-5" href="{% url 'community:create_post' %}">Создать новую запись</a></li>
+								</div>
+							</ul>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Основной контент -->
+	<main id="content" class="container-fluid flex-grow-1 pb-0">
+		{% block body %}
+		{% endblock %}
+	</main>
+
+	<!-- Футер -->
+	<footer class="bg-success text-white mt-auto">
+		<div class="container py-4">
+			<div class="row justify-content-center">
+				<div class="col-md-6 col-sm-12 text-center d-flex justify-content-center gap-4">
+					<p class="fs-5 mb-0"><a href="https://github.com/AprogramG/grow-together" class="text-white text-decoration-none"><b>GitHub</b></a></p>
+					
+				</div>
+			</div>
+		</div>
+		<div class="text-center py-3" style="background-color: rgba(0, 0, 0, 0.1);">
+			Демонстрационный проект
+			<a class="text-white text-decoration-none" href="https://github.com/AprogramG"></a>
+		</div>
+	</footer>
+	{% block script %}
+	{% endblock %}
+
+	<!-- Bootstrap JS -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+		integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+		crossorigin="anonymous">
+		
+	</script> 
+	
+		
+</div>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Определяем путь и инициализируем переменную currentPage
+    const currentPath = window.location.pathname;
+    let currentPage = '';
+
+    if (currentPath.includes('diary')) {
+        currentPage = 'diary';
+    } else if (currentPath.includes('create-new') || currentPath.includes('my-habits') || currentPath.includes('habits')) {
+        currentPage = 'habits';
+    } else if (currentPath === '/' || currentPath.includes('home')) {
+        currentPage = 'home';
+    }
+    
+    // Активируем соответствующую ссылку
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        const page = link.getAttribute('data-page');
+        const underline = link.querySelector('.nav-underline');
+        console.log('Checking link:', page, 'Current page:', currentPage);
+        
+        // Сначала сбрасываем все стили
+        link.classList.remove('active');
+        if (underline) {
+            underline.classList.add('w-0', 'opacity-0');
+            underline.classList.remove('w-100', 'opacity-100');
+        }
+        
+        // Затем активируем нужную ссылку
+        if (page === currentPage) {
+            console.log('Activating link:', page);
+            link.classList.add('active');
+            if (underline) {
+                underline.classList.remove('w-0', 'opacity-0');
+                underline.classList.add('w-100', 'opacity-100');
+            }
+        }
+        
+        // Добавляем эффекты при наведении только для неактивных ссылок
+        if (page !== currentPage) {
+            // Удаляем существующие обработчики событий
+            const newLink = link.cloneNode(true);
+            link.parentNode.replaceChild(newLink, link);
+            
+            newLink.addEventListener('mouseenter', () => {
+                const hoverUnderline = newLink.querySelector('.nav-underline');
+                if (hoverUnderline) {
+                    hoverUnderline.classList.remove('w-0', 'opacity-0');
+                    hoverUnderline.classList.add('w-100', 'opacity-100');
+                }
+            });
+            
+            newLink.addEventListener('mouseleave', () => {
+                const hoverUnderline = newLink.querySelector('.nav-underline');
+                if (hoverUnderline) {
+                    hoverUnderline.classList.add('w-0', 'opacity-0');
+                    hoverUnderline.classList.remove('w-100', 'opacity-100');
+                }
+            });
+        }
+    });
+});
+</script>
+</body>
+
+</html>

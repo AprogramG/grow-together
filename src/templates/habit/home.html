@@ -1,0 +1,232 @@
+{% extends 'habit/base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+
+{% block style %}
+<style>
+    /* Disable overscroll but keep scrolling functionality */
+    html {
+        overflow: hidden;
+    }
+    
+    body {
+        height: 100vh;
+        overflow-y: auto;
+        scrollbar-width: none; /* Для Firefox */
+        -ms-overflow-style: none; /* Для Internet Explorer и Edge */
+    }
+    
+    body::-webkit-scrollbar {
+        display: none; /* Для Chrome, Safari и Opera */
+    }
+    
+    .achievement-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .achievement-card:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .achievement-icon {
+        font-size: 24px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    /* Adding styles for footer and content */
+    #content {
+        transition: margin-bottom 0.3s ease;
+    }
+    
+    footer {
+        transition: transform 0.3s ease;
+    }
+    
+    .expanded-content {
+        margin-bottom: 100px;
+    }
+    
+    /* Basic styles for fire */
+    .fire-icon {
+        filter: drop-shadow(0 0 4px #ff6600);
+        transform-origin: center bottom;
+        transition: transform 0.1s ease-out;
+    }
+
+    /* Adding highlight animation */
+    @keyframes pulse {
+        0% {
+            opacity: 0.75;
+        }
+        50% {
+            opacity: 0.5;
+        }
+        100% {
+            opacity: 0.75;
+        }
+    }
+
+    .bg-secondary.opacity-75 {
+        animation: pulse 2s ease-in-out infinite;
+    }
+</style>
+{% endblock %}
+{% block body %}
+<!-- Dashboard block -->
+{% if user.is_authenticated%}
+
+<div id="dashboard" class="container-fluid">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-center align-items-center gap-2 mt-3 mb-4">
+            <div class="d-flex flex-column align-items-center">
+                <div class="d-flex align-items-center">
+                    <h1 class="text-center text-white mb-0" style="font-size: clamp(120px, 10vw, 120px);"  id='streaks'>{{streaks}}</h1>
+                    <img src="{% static "habit/fire.svg" %}" alt="fire" class="img-fluid ms-2 fire-icon mt-3" style="max-width: clamp(90px, 10vw, 90px);">
+                    </div>
+                    <span class="text-white " style="font-size: clamp(50px, 10vw, 30px);"><b>
+                        {{day_word}} стрика</b></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar block -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-xxl-6 col-lg-8">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h3 class="text-center mb-4">{{ calendar_data.month_name }} {{ calendar_data.year }}</h3>
+                    <div class="d-grid gap-2 p-2 p-md-4" style="grid-template-columns: repeat(7, 1fr);" id="calendar">
+                        {% for day in calendar_data.weekdays %}
+                            <div class="text-white text-center fw-bold">{{ day }}</div>
+                        {% endfor %}
+                        
+                        {% for week in calendar_data.weeks %}
+                            {% for day in week %}
+                                <div class="text-white text-center p-1 p-md-2 rounded {% if day.class == 'bg-success' %}{{day.class}}{% elif day.class == 'bg-secondary' %}{{day.class}} id='current_day'{% else %}{{day.class}}{% endif %}">
+                                    {{ day.day }}
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Habits block -->
+    {% if habits %}
+        {% for habit in habits %}
+      
+            <div class="row justify-content-center mt-3" data-habit-id="{{ habit.id }}" id='habits'>
+                <div class="col-12 col-md-10 col-lg-8">
+                    <div class="card bg-dark text-white">
+                        <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <div class="d-flex align-items-center flex-wrap gap-3">
+                                {% if habit.description %}
+                        <h5 class="mb-0 habit-name" id="habit-name">{{ habit.name }}</h5>
+                    
+                            <p class="mb-0 text-white habit-description" id="habit-description">{{ habit.description }}</p>
+                        {% else%}
+                            <h3 class="mb-0 habit-name" id="habit-name">{{ habit.name }}</h3>
+                            {% endif %}
+                            </div>
+                            <button class="btn btn-success habit-toggle px-4 px-md-5" 
+                                    data-habit-id="{{ habit.id }}" id="complete_habit">✓</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        {% endfor %}
+    {% endif %}
+
+    <!-- Moved achievements block -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-12 col-md-10 col-lg-8 mb-5">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0 ">Ближайшее достижение</h4>
+                        <div class="achievement-buttons">
+                            <button class="btn btn-success px-4" id="toggleAchievements" style="font-size: clamp(12px, 3vw, 16px);">
+                                Показать все
+                            </button>
+                            <button class="btn btn-success px-4" id="hideAchievements" style="display: none; font-size: clamp(12px, 3vw, 16px);">
+                                Скрыть
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Next achievement -->
+                    {% if achievements %}
+                    <div class="achievement-card mb-3" id="nextAchievement" data-achievement-id="{{ achievements.0.id }}">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="achievement-icon flex-shrink-0" style="width: 60px; height: 60px;">
+                                <img src="{{ MEDIA_URL }}{{ achievements.0.img.url }}" alt="{{ achievements.0.name }}" style="max-width: 70%; max-height: 70%;">
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1 fs-4">{{ achievements.0.name }}</h5>
+                                <p class="text-white fs-5 mt-0" >{{ achievements.0.description }}</p>
+                                <div class="progress bg-dark" style="height: 10px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ achievements.0.progress }}" 
+                                         aria-valuenow="{{ achievements.0.progress|cut:'%' }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                                <small id="achievementProgress" class="text-white">{{ achievements.0.current_value }} / {{ achievements.0.target_value }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- All achievements -->
+                    <div id="allAchievements" style="display: none;">
+                        {% for achievement in achievements %}
+                        <div class="achievement-card mb-2" data-achievement-id="{{ achievement.id }}">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="achievement-icon flex-shrink-0" style="width: 60px; height: 60px;">
+                                    <img src="{{ MEDIA_URL }}{{ achievement.img.url }}" alt="{{ achievement.name }}" style="max-width: 70%; max-height: 70%;">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fs-4"><b>{{ achievement.name }}</b></h6>
+                                    <small class="text-white fs-5 mt-0">{{ achievement.description }}</small>
+                                    <div class="progress mt-2 bg-dark" style="height: 10px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ achievement.progress }}" 
+                                             aria-valuenow="{{ achievement.progress|cut:'%' }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100"></div>
+                                    </div>
+                                    <p id="achievementProgress" class="text-white">{{ achievement.current_value }} / {{ achievement.target_value }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+    <h1 class="text-center text-white mt-4 fs-2">Добро пожаловать!</h1>
+    <p class="text-center text-white mt-4 fs-2"> Пока у вас нет привычек</p>
+   
+{% endif %}
+
+
+{% block script %}
+<script src="{% static 'habit/home.js' %}"></script>
+{% endblock %}
+
+{% endblock %}

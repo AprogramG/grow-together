@@ -1,0 +1,112 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres-db-container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    restart: always
+
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: grow-together-container
+    image: aprogramb/grow-together:latest
+    volumes:
+      - .:/app
+      - ./src/staticfiles:/app/src/staticfiles
+      - ./src/media:/app/src/media
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app:/app/src
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=config.settings.${DJANGO_ENV}
+      - DJANGO_ENV=${DJANGO_ENV}
+      - DB_HOST=${DB_HOST}
+    depends_on:
+      - db
+      - redis
+    restart: always
+    env_file:
+      - .env
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+
+  celery:
+    build: .
+    container_name: celery-worker-container
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app:/app/src
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
+    env_file:
+      - .env
+    command: celery -A config worker -l INFO
+    restart: always
+
+  celery-beat:
+    build: .
+    container_name: celery-beat-container
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app:/app/src
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DJANGO_ENV=${DJANGO_ENV}
+      - DB_HOST=${DB_HOST}
+    depends_on:
+      - web
+      - redis
+    env_file:
+      - .env
+    command: celery -A config beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-container
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./src/media:/app/src/media
+      - ./src/staticfiles:/app/src/staticfiles
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - web
+    restart: always
+
+volumes:
+  postgres_data:
+  media_volume:
